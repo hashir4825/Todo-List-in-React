@@ -1,0 +1,186 @@
+import React, { useState, useEffect } from "react";
+import Header from "./Components/Header";
+import List from "./Components/List";
+import Info from "./Components/Info";
+import Footer from "./Components/Footer";
+import About from "./Components/About";
+import Home from "./Components/Home";
+import {
+  BrowserRouter as Router,
+  Routes, // Use Routes instead of Switch
+  Route,
+} from "react-router-dom";
+
+function App() {
+  // const storedTodos = localStorage.getItem('todos');
+  // const initialTodos = storedTodos ? JSON.parse(storedTodos) : [];
+
+  const storedTodos = localStorage.getItem("todos");
+  let initialTodos = [];
+  if (storedTodos) {
+    initialTodos = JSON.parse(storedTodos);
+  }
+
+  const [todos, setTodos] = useState(initialTodos);
+
+  // useEffect(() => {
+  //   localStorage.setItem("todos", JSON.stringify(todos));
+  // }, [todos]);
+
+  return (
+    <Router>
+      <Header />
+
+      <Routes>
+        {" "}
+        {/* Use Routes instead of Switch */}
+        <Route
+          path="/List"
+          element={<List todos={todos} setTodos={setTodos} />}
+        />
+        <Route path="/" element={<Home />} />
+        <Route path="/Info" element={<Info />} />
+        <Route path="/About" element={<About />} />
+      </Routes>
+
+      <Footer />
+    </Router>
+  );
+}
+
+export default App;
+
+
+
+
+
+
+
+
+import React, { useState } from "react";
+
+const List = ({ todos, setTodos }) => {
+  const [todoInput, setTodoInput] = useState(""); // Add this line to declare todoInput state
+
+  const style = {
+    spacing: {
+      margin: "10px",
+      width: "600px",
+    },
+    middle: {
+      minHeight: "calc(86vh - 35px)",
+      padding: "10px",
+    },
+    completed: {
+      textDecoration: "line-through",
+    },
+    clr: {
+      backgroundColor: "#eb5c08d1",
+    },
+  };
+  const handleAddTodo = () => {
+    if (todoInput.trim() !== "") {
+      const newTodo = {
+        id: todos.length + 1,
+        description: todoInput.trim(),
+        check: false,
+      };
+      setTodos([...todos, newTodo]);
+      setTodoInput("");
+      localStorage.setItem('todos', JSON.stringify([...todos, newTodo]));
+    } else {
+      alert("Please enter a todo");
+    }
+  };
+
+  const DeleteTodo = (id) => {
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    const reindexedTodos = updatedTodos.map((todo, index) => ({
+      ...todo,
+      id: index + 1,
+    }));
+    setTodos(reindexedTodos);
+    localStorage.setItem('todos', JSON.stringify(reindexedTodos));
+  };
+
+  // const handleAddTodo = () => {
+  //   if (todoInput.trim() !== "") {
+  //     const newTodo = {
+  //       id: todos.length + 1,
+  //       description: todoInput.trim(),
+  //       check: false,
+  //     };
+  //     setTodos([...todos, newTodo]);
+  //     setTodoInput("");
+  //   } else {
+  //     alert("Please enter a todo");
+  //   }
+  // };
+
+  const ChangeInputText = (e) => {
+    setTodoInput(e.target.value);
+  };
+
+  const handleToggleTodo = (id) => {
+    const updatedTodos = todos.map((todo) =>
+      todo.id === id ? { ...todo, check: !todo.check } : todo
+    );
+    setTodos(updatedTodos);
+  };
+
+  return (
+    <div
+      style={{ ...style.spacing, ...style.middle }}
+      className="mx-auto p-4 bg-white rounded-xl d-flex flex-column space-y-4"
+    >
+      <h2 className="text-center">Todo List</h2>
+      <div className="d-flex align-items-center my-4 mx-auto">
+        <input
+          type="text"
+          placeholder="Enter your todo"
+          className="flex-grow border border-gray-300 rounded-md py-2 px-3 mr-4"
+          value={todoInput}
+          onChange={ChangeInputText}
+        />
+        <button
+          style={style.clr}
+          className="btn btn-primary px-4 py-2 rounded-md mx-3"
+          onClick={handleAddTodo}
+        >
+          Add
+        </button>
+      </div>
+      <ul className="list-group">
+        {todos.map((myvalue) => (
+          <li
+            key={myvalue.id}
+            className={`list-group-item d-flex justify-content-between align-items-center border-bottom ${
+              myvalue.check ? "completed" : ""
+            }`}
+          >
+            <label className="cursor-pointer">
+              <input
+                type="checkbox"
+                className="mr-4 mx-3"
+                checked={myvalue.check}
+                onChange={() => handleToggleTodo(myvalue.id)}
+              />
+              <span style={myvalue.check ? style.completed : {}}>
+                {myvalue.id} {myvalue.description}
+              </span>
+            </label>
+            <button
+              style={style.clr}
+              className="btn btn-danger px-4 py-2 rounded-md"
+              onClick={() => DeleteTodo(myvalue.id)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default List;
